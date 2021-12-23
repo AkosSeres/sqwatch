@@ -1,0 +1,36 @@
+{
+  "name": "superquadwatch",
+  "version": "1.0.0",
+  "description": "Tool for viewing output of superquadric particle simulations",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --progress --mode=development",
+    "start": "webpack serve --progress --mode=development --static=dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AkosSeres/superquadwatch.git"
+  },
+  "keywords": [
+    "vtk",
+    "superquadric",
+    "superquadratic",
+    "simulation",
+    "liggghts"
+  ],
+  "author": "Ákos Seres",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AkosSeres/superquadwatch/issues"
+  },
+  "homepage": "https://github.com/AkosSeres/superquadwatch#readme",
+  "dependencies": {
+    "@kitware/vtk.js": "^21.3.1"
+  },
+  "devDependencies": {
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.1"
+  }
+}
