@@ -7,10 +7,11 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GUI } from 'dat.gui';
-import SuperquadricMesh from './superquadric_mesh';
+import ColoredSuperquadricGeometry from './colored_superquadric_geometry';
 
 // Settings
 const gui = new GUI();
+gui.useLocalStorage = true;
 
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -33,9 +34,10 @@ camSettings.add(camera, 'fov', 5, 120).onChange(() => { camera.updateProjectionM
 const scene = new Scene();
 
 // Create the basic superquadric
-const sq = new SuperquadricMesh(0.1, 0.1, 0.25, 2, 2, 7, 5);
-const mesh = new Mesh(sq.geometry, sq.material);
-mesh.receiveShadow = false;
+const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'yellow', 'blue', 5, 5);
+const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(1500);
+mainMaterial.shininess = 15;
+const mesh = new Mesh(sqGeometry, mainMaterial);
 
 // Set lighting
 scene.add(new AmbientLight(0x505050));
@@ -89,7 +91,7 @@ renderer.domElement.addEventListener('drop', async (ev) => {
   const files = ev.dataTransfer.items;
   const makeIt = async (fileIdx) => {
     const file = files[fileIdx].getAsFile();
-    let fileMesh = new InstancedMesh(sq.geometry, sq.material);
+    let fileMesh = null;
     const str = file.arrayBuffer();
     const resBuf = await str;
     const dw = new DataView(resBuf);
@@ -135,7 +137,7 @@ renderer.domElement.addEventListener('drop', async (ev) => {
       const matrix = new Matrix4();
       const matrixRot = new Matrix4();
       const matrix3 = new Matrix3();
-      fileMesh = new InstancedMesh(sq.geometry, sq.material, nn);
+      fileMesh = new InstancedMesh(sqGeometry, mainMaterial, nn);
 
       for (let i = 0; i < nn; i++) {
         // const elems = tensor.slice(i * 9, i * 9 + 9);
@@ -182,7 +184,7 @@ function animate(occasional) {
     currentMesh = rollingMeshes[animProps.drawIdx];
     scene.add(currentMesh);
   }
-  if (rollingMeshes[animProps.drawIdx] != currentMesh) {
+  if (rollingMeshes[animProps.drawIdx] !== currentMesh) {
     scene.remove(currentMesh);
     currentMesh = rollingMeshes[animProps.drawIdx];
     scene.add(currentMesh);
@@ -190,7 +192,6 @@ function animate(occasional) {
 
   if (tline.getValue() !== animProps.drawIdx) {
     tline.setValue(animProps.drawIdx);
-    console.log(animProps.drawIdx);
   }
   tline.max(rollingMeshes.length - 1);
 
