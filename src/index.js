@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
-  Vector3, Scene, WebGLRenderer, PerspectiveCamera,
+  Vector3, Scene, WebGLRenderer, PerspectiveCamera, PCFShadowMap,
   SpotLight, DirectionalLight, AmbientLight, Mesh, Color,
   PlaneGeometry, MeshPhongMaterial, Matrix4, InstancedMesh, Matrix3, DoubleSide, FrontSide,
 } from 'three';
@@ -15,6 +15,8 @@ gui.useLocalStorage = true;
 
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = PCFShadowMap;
 document.body.appendChild(renderer.domElement);
 
 const camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight);
@@ -36,6 +38,7 @@ const scene = new Scene();
 const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 5, 5);
 const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
 const mesh = new Mesh(sqGeometry, mainMaterial);
+mesh.castShadow = true;
 mesh.receiveShadow = false;
 
 // Set lighting
@@ -73,6 +76,7 @@ scene.add(dirLight);
 const dirSettings = gui.addFolder('Directional light');
 dirSettings.add(dirLight, 'visible');
 dirSettings.add(dirLight, 'intensity', 0, 5, 0.01);
+dirSettings.add(dirLight, 'castShadow').name('shadows').onChange((isShad) => { renderer.shadowMap.autoUpdate = isShad; });
 dirSettings.add(dirLight.position, 'x', -5, 5, 0.1).name('posX');
 dirSettings.add(dirLight.position, 'y', -5, 5, 0.1).name('posY');
 dirSettings.add(dirLight.position, 'z', 0, 5, 0.1).name('posZ');
@@ -107,7 +111,7 @@ const addGround = () => {
     groundMaterial,
   );
   ground.position.z = groundSettings.height;
-  ground.receiveShadow = false;
+  ground.receiveShadow = true;
   ground.visible = groundSettings.visible;
   scene.add(ground);
 };
@@ -192,6 +196,8 @@ renderer.domElement.addEventListener('drop', async (ev) => {
         fileMesh.setMatrixAt(i, (matrix).multiply(matrixRot));
       }
     }
+    fileMesh.castShadow = true;
+    fileMesh.receiveShadow = true;
     return fileMesh;
   };
   const promises = [];
