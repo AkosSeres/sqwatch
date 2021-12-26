@@ -50,9 +50,9 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
       return geometry1;
     });
     gemke = BufferGeometryUtils.mergeBufferGeometries(geoms, false);
-    gemke.computeVertexNormals();
     this.copy(gemke);
     gemke.dispose();
+    geoms.forEach((g) => g.dispose());
     this.mapToSuperquadric();
   }
 
