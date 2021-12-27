@@ -4,7 +4,7 @@
   "description": "Tool for viewing output of superquadric particle simulations",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --progress --mode=development",
+    "build": "webpack --progress --mode=production",
     "start": "webpack serve --progress --mode=development --static=dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
