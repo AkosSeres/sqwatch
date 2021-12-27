@@ -9,6 +9,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GUI } from 'dat.gui';
 import ColoredSuperquadricGeometry from './colored_superquadric_geometry';
 
+// Remove document margin
+document.body.style.margin = '0px';
+document.body.style.backgroundColor = 'black';
+
 // Settings
 const gui = new GUI();
 gui.useLocalStorage = true;
