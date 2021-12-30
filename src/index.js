@@ -39,7 +39,7 @@ camSettings.add(camera, 'fov', 5, 120).onChange(() => { camera.updateProjectionM
 const scene = new Scene();
 
 // Create the basic superquadric
-const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 5, 5);
+const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 8, 4);
 const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
 const mesh = new Mesh(sqGeometry, mainMaterial);
 mesh.castShadow = true;
