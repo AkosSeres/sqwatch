@@ -1,9 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
-  Vector3, Scene, WebGLRenderer, PerspectiveCamera, PCFShadowMap,
-  SpotLight, DirectionalLight, AmbientLight, Mesh, Color,
-  PlaneGeometry, MeshPhongMaterial, Matrix4, InstancedMesh, Matrix3, DoubleSide, FrontSide,
+  AmbientLight, Color, DirectionalLight, DoubleSide, FrontSide,
+  InstancedMesh, Material, Matrix3, Matrix4, Mesh,
+  MeshPhongMaterial, PCFShadowMap, PerspectiveCamera,
+  PlaneGeometry, Scene, SpotLight, Vector3, WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GUI } from 'dat.gui';
@@ -95,9 +96,9 @@ const groundSettings = {
   visible: true,
   doubleSide: false,
 };
-let groundGeometry = null;// new PlaneGeometry(groundSettings.size, groundSettings.size, 1, 1);
-let groundMaterial = null;// new MeshPhongMaterial(groundSettings);
-let ground = null;
+let groundGeometry: PlaneGeometry = null;
+let groundMaterial: Material = null;
+let ground: Mesh = null;
 const addGround = () => {
   if (ground) {
     scene.remove(ground);
@@ -143,7 +144,7 @@ renderer.domElement.addEventListener('dragover', (ev) => { ev.preventDefault(); 
 renderer.domElement.addEventListener('drop', async (ev) => {
   ev.preventDefault();
   const files = ev.dataTransfer.items;
-  const makeIt = async (fileIdx) => {
+  const makeIt = async (fileIdx: number) => {
     const file = files[fileIdx].getAsFile();
     let fileMesh = null;
     const str = file.arrayBuffer();
@@ -212,7 +213,7 @@ renderer.domElement.addEventListener('drop', async (ev) => {
   }
   const loadedMeshes = await Promise.allSettled(promises);
   loadedMeshes.forEach((it) => {
-    rollingMeshes.push(it.value);
+    if (it.status === 'fulfilled') rollingMeshes.push(it.value);
   });
 });
 
@@ -225,8 +226,15 @@ const animProps = {
 const keyframeGui = gui.addFolder('Keyframes');
 keyframeGui.open();
 const tline = keyframeGui.add(animProps, 'drawIdx', 0, rollingMeshes.length - 1, 1).listen();
-function animate(occasional) {
-  if (!occasional)requestAnimationFrame(() => { animate(false); });
+
+/**
+ * The update function.
+ *
+ * @param {boolean} occasional Brings animation about presence of animation
+ * @return {null} Nothing
+ */
+function animate(occasional: boolean) {
+  if (!occasional) requestAnimationFrame(() => { animate(false); });
 
   if (isAnimationGoing) { animProps.count++; }
   if (animProps.count > 1) {
@@ -251,4 +259,4 @@ function animate(occasional) {
   renderer.render(scene, camera);
 }
 animate(false);
-tline.onChange(() => { if (!isAnimationGoing)animate(true); });
+tline.onChange(() => { if (!isAnimationGoing) animate(true); });

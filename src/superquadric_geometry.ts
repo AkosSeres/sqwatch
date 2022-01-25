@@ -1,9 +1,32 @@
 import {
+  ColorRepresentation,
   MeshPhongMaterial, SphereGeometry,
 } from 'three';
 
 export default class SuperquadricGeometry extends SphereGeometry {
-  constructor(sizex, sizey, sizez, blockiness1, blockiness2, resolutionPhi = 32, resolutionZ = 16) {
+  sizex: number;
+
+  sizey: number;
+
+  sizez: number;
+
+  blockiness1: number;
+
+  blockiness2: number;
+
+  resolutionPhi: number;
+
+  resolutionZ: number;
+
+  constructor(
+    sizex: number,
+    sizey: number,
+    sizez: number,
+    blockiness1: number,
+    blockiness2: number,
+    resolutionPhi = 32,
+    resolutionZ = 16,
+  ) {
     super(1, resolutionPhi, resolutionZ);
     this.sizex = sizex;
     this.sizey = sizey;
@@ -42,14 +65,14 @@ export default class SuperquadricGeometry extends SphereGeometry {
       poss.setZ(i, this.sizez * Math.sign(sinu) * (Math.abs(sinu) ** (exp1)));
       // Set normals
       norms.setX(i, (1 / this.sizex) * Math.sign(cosu) * Math.sign(cosv)
-      * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(cosv) ** (2 - exp2)));
+        * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(cosv) ** (2 - exp2)));
       norms.setY(i, (1 / this.sizey) * Math.sign(cosu) * Math.sign(sinv)
-      * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(sinv) ** (2 - exp2)));
+        * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(sinv) ** (2 - exp2)));
       norms.setZ(i, (1 / this.sizez) * Math.sign(sinu) * (Math.abs(sinu) ** (2 - exp1)));
     }
   }
 
-  static getDefaultPhongMaterial(shininess = 150, color = 0x0000ff) {
+  static getDefaultPhongMaterial(shininess = 150, color: ColorRepresentation = 0x0000ff) {
     return new MeshPhongMaterial({ color, shininess });
   }
 }

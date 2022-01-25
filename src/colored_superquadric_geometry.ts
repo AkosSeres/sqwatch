@@ -1,17 +1,35 @@
-import {
-  Color, SphereGeometry, BufferGeometry, BufferAttribute, MeshPhongMaterial,
-} from 'three';
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
+import {
+  BufferAttribute, BufferGeometry, Color, ColorRepresentation, MeshPhongMaterial, SphereGeometry,
+} from 'three';
 
 export default class ColoredSuperquadricGeometry extends BufferGeometry {
+  sizex: number;
+
+  sizey: number;
+
+  sizez: number;
+
+  blockiness1: number;
+
+  blockiness2: number;
+
+  resolutionPhi: number;
+
+  resolutionZ: number;
+
+  color1: ColorRepresentation;
+
+  color2: ColorRepresentation;
+
   constructor(
-    sizex,
-    sizey,
-    sizez,
+    sizex: number,
+    sizey: number,
+    sizez: number,
     blockiness1 = 2,
     blockiness2 = 2,
-    color1 = 0xffffff,
-    color2 = 0xffffff,
+    color1: ColorRepresentation = 0xffffff,
+    color2: ColorRepresentation = 0xffffff,
     resolutionPhi = 32,
     resolutionZ = 16,
   ) {
@@ -26,7 +44,6 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
     this.color1 = new Color(color1);
     this.color2 = new Color(color2);
 
-    let gemke = null;
     const angles = [0, Math.PI / 2, 0, Math.PI / 2];
     const angles2 = [0, 0, Math.PI, Math.PI];
     const colors = [this.color1, this.color2, this.color2, this.color1];
@@ -49,7 +66,7 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
       geometry1.setAttribute('color', new BufferAttribute(new Float32Array(cols), 3));
       return geometry1;
     });
-    gemke = BufferGeometryUtils.mergeBufferGeometries(geoms, false);
+    const gemke = BufferGeometryUtils.mergeBufferGeometries(geoms, false);
     this.copy(gemke);
     gemke.dispose();
     geoms.forEach((g) => g.dispose());
@@ -88,9 +105,9 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
       poss.setZ(i, this.sizez * Math.sign(sinu) * (Math.abs(sinu) ** (exp1)));
       // Set normals
       norms.setX(i, (1 / this.sizex) * Math.sign(cosu) * Math.sign(cosv)
-      * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(cosv) ** (2 - exp2)));
+        * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(cosv) ** (2 - exp2)));
       norms.setY(i, (1 / this.sizey) * Math.sign(cosu) * Math.sign(sinv)
-      * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(sinv) ** (2 - exp2)));
+        * (Math.abs(cosu) ** (2 - exp1)) * (Math.abs(sinv) ** (2 - exp2)));
       norms.setZ(i, (1 / this.sizez) * Math.sign(sinu) * (Math.abs(sinu) ** (2 - exp1)));
     }
   }
