@@ -1,9 +1,6 @@
 import {
-    AmbientLight, Color, DirectionalLight, DoubleSide, FrontSide,
-    InstancedMesh, Material, Matrix3, Matrix4, Mesh,
-    MeshPhongMaterial, PCFShadowMap,
-    PerspectiveCamera,
-    PlaneGeometry, Scene, SpotLight, Vector3, WebGLRenderer,
+    InstancedMesh, Matrix3, Matrix4, Mesh, PCFShadowMap,
+    PerspectiveCamera, Scene, Vector3, WebGLRenderer,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
@@ -21,6 +18,8 @@ export default class SqWatchApp {
     gui: GUI;
     // The Three.js renderer instance
     renderer: WebGLRenderer;
+    // The main scene that can be modified by plugins
+    scene: Scene;
     // The camera
     camera: PerspectiveCamera;
     // The control object
@@ -42,97 +41,9 @@ export default class SqWatchApp {
         this.setupCamera();
         this.setupControls();
 
+        // Create scene
         const scene = new Scene();
-
-        // Create the basic superquadric
-        const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 8, 4);
-        const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
-        const mesh = new Mesh(sqGeometry, mainMaterial);
-        mesh.castShadow = true;
-        mesh.receiveShadow = false;
-
-        // Set lighting
-        const colorSettings = {
-            ambientColor: 0x525252,
-            spotlightColor: 0x525252,
-            directionalColor: 0x878787,
-        };
-        const ambientLight = new AmbientLight(colorSettings.ambientColor);
-        scene.add(ambientLight);
-        const lightingSettings = this.gui.addFolder('Ambient light');
-        lightingSettings.add(ambientLight, 'visible');
-        lightingSettings.addColor(colorSettings, 'ambientColor').onChange((newColor) => { ambientLight.color = new Color(newColor); });
-
-        const spotLight = new SpotLight(colorSettings.spotlightColor);
-        spotLight.angle = Math.PI / 2;
-        spotLight.penumbra = 0.2;
-        spotLight.position.set(2, 3, 3);
-        spotLight.castShadow = false;
-        scene.add(spotLight);
-        const spotlightSettings = this.gui.addFolder('Spotlight');
-        spotlightSettings.add(spotLight, 'visible');
-        spotlightSettings.add(spotLight, 'intensity', 0, 5, 0.01);
-        spotlightSettings.add(spotLight, 'angle', 0, Math.PI, 0.01);
-        spotlightSettings.add(spotLight, 'penumbra', 0, 1, 0.01);
-        spotlightSettings.add(spotLight.position, 'x', -5, 5, 0.1).name('posX');
-        spotlightSettings.add(spotLight.position, 'y', -5, 5, 0.1).name('posY');
-        spotlightSettings.add(spotLight.position, 'z', 0, 5, 0.1).name('posZ');
-        spotlightSettings.addColor(colorSettings, 'spotlightColor').onChange((newColor) => { spotLight.color = new Color(newColor); });
-
-        const dirLight = new DirectionalLight(colorSettings.directionalColor);
-        dirLight.position.set(-2, 3, 1.8);
-        dirLight.castShadow = false;
-        scene.add(dirLight);
-        const dirSettings = this.gui.addFolder('Directional light');
-        dirSettings.add(dirLight, 'visible');
-        dirSettings.add(dirLight, 'intensity', 0, 5, 0.01);
-        dirSettings.add(dirLight, 'castShadow').name('shadows').onChange((isShad: boolean) => { this.renderer.shadowMap.autoUpdate = isShad; });
-        dirSettings.add(dirLight.position, 'x', -5, 5, 0.1).name('posX');
-        dirSettings.add(dirLight.position, 'y', -5, 5, 0.1).name('posY');
-        dirSettings.add(dirLight.position, 'z', 0, 5, 0.1).name('posZ');
-        dirSettings.addColor(colorSettings, 'directionalColor').onChange((newColor) => { dirLight.color = new Color(newColor); });
-
-        // Add ground
-        const groundSettings = {
-            size: 9,
-            color: 0xc3c3c3,
-            shininess: 65,
-            height: -1,
-            visible: true,
-            doubleSide: false,
-        };
-        let groundGeometry: PlaneGeometry = null;
-        let groundMaterial: Material = null;
-        let ground: Mesh = null;
-        const addGround = () => {
-            if (ground) {
-                scene.remove(ground);
-                groundGeometry.dispose();
-                groundMaterial.dispose();
-            }
-            groundGeometry = new PlaneGeometry(groundSettings.size, groundSettings.size, 1, 1);
-            groundMaterial = new MeshPhongMaterial({
-                color: groundSettings.color,
-                shininess: groundSettings.shininess,
-                side: groundSettings.doubleSide ? DoubleSide : FrontSide,
-            });
-            ground = new Mesh(
-                groundGeometry,
-                groundMaterial,
-            );
-            ground.position.z = groundSettings.height;
-            ground.receiveShadow = true;
-            ground.visible = groundSettings.visible;
-            scene.add(ground);
-        };
-        addGround();
-        const grSettings = this.gui.addFolder('Floor settings');
-        grSettings.add(groundSettings, 'visible').onChange(addGround);
-        grSettings.add(groundSettings, 'height', -100, 100, 0.1).onChange(addGround);
-        grSettings.add(groundSettings, 'doubleSide').onChange(addGround);
-        grSettings.add(groundSettings, 'size', 0).onChange(addGround);
-        grSettings.addColor(groundSettings, 'color').onChange(addGround);
-        grSettings.add(groundSettings, 'shininess', 0, 1000, 1).onChange(addGround);
+        this.scene = scene;
 
         // Attach events for stopping keyframes
         let isAnimationGoing = true;
@@ -140,9 +51,12 @@ export default class SqWatchApp {
             if (e.key === ' ') isAnimationGoing = !isAnimationGoing;
         });
 
-        const rollingMeshes = [mesh];
-        let currentMesh = mesh;
-        scene.add(currentMesh);
+        const rollingMeshes: Array<Mesh> = [];
+        const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 8, 4);
+        const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
+        const mesh = new Mesh(sqGeometry, mainMaterial);
+        let currentMesh: Mesh = mesh;
+        // scene.add(currentMesh);
 
         // Handle file drag and drop
         this.renderer.domElement.addEventListener('dragover', (ev: Event) => { ev.preventDefault(); });
@@ -201,7 +115,7 @@ export default class SqWatchApp {
 
                     for (let i = 0; i < nn; i += 1) {
                         matrix3.fromArray(tensor, i * 9);
-                        matrixRot.setFromMatrix3(matrix3);
+                        matrixRot.setFromMatrix3(matrix3.transpose());
                         matrix.makeTranslation(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]);
                         fileMesh.setMatrixAt(i, (matrix).multiply(matrixRot));
                     }
@@ -242,14 +156,14 @@ export default class SqWatchApp {
             if (!occasional) requestAnimationFrame(() => { animate(false); });
 
             if (isAnimationGoing) { animProps.count += 1; }
-            if (animProps.count > 1) {
+            if (animProps.count > 1 && rollingMeshes.length) {
                 animProps.count = 0;
                 scene.remove(currentMesh);
                 animProps.drawIdx = (animProps.drawIdx + 1) % rollingMeshes.length;
                 currentMesh = rollingMeshes[animProps.drawIdx];
                 scene.add(currentMesh);
             }
-            if (rollingMeshes[animProps.drawIdx] !== currentMesh) {
+            if (rollingMeshes.length && rollingMeshes[animProps.drawIdx] !== currentMesh) {
                 scene.remove(currentMesh);
                 currentMesh = rollingMeshes[animProps.drawIdx];
                 scene.add(currentMesh);
@@ -260,8 +174,11 @@ export default class SqWatchApp {
             }
             tline.max(rollingMeshes.length - 1);
 
+            // Update plugins
+            this.plugins.forEach(p => p.update?.(this));
+
             this.cameraControls.update();
-            this.renderer.render(scene, this.camera);
+            this.renderer.render(this.scene, this.camera);
         }
         animate(false);
         tline.onChange(() => { if (!isAnimationGoing) animate(true); });
@@ -278,7 +195,7 @@ export default class SqWatchApp {
     }
 
     setupCamera() {
-        this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+        this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.05, 500);
         this.camera.up = new Vector3(0, 0, 1);
         this.camera.position.set(15, 0, 1);
         this.camera.lookAt(0, 0, 0);
