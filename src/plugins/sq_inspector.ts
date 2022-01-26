@@ -2,7 +2,6 @@ import ColoredSuperquadricGeometry from "../colored_superquadric_geometry";
 import SqWatchApp from "src/sq_watch.ts";
 import { BufferGeometry, ColorRepresentation, Material, Mesh } from "three";
 import { SqPlugin } from "./sq_plugin";
-import { GUI } from "dat.gui";
 
 type MeshSettings = {
     visible: boolean,
@@ -25,6 +24,7 @@ type SqInspectPluginType =
         geom: BufferGeometry,
         material: Material,
         meshSettings: MeshSettings,
+        regenMesh(app: SqWatchApp): void,
     }
 
 export const SqInspectorPlugin: SqInspectPluginType = {
@@ -44,24 +44,23 @@ export const SqInspectorPlugin: SqInspectPluginType = {
         sizez: 0.25,
         shininess: 250,
     },
-    init(app: SqWatchApp) {
+    init(this: SqInspectPluginType, app: SqWatchApp) {
         const sqFolder = app.gui.addFolder("Superqudric inspector");
-        sqFolder.add(this.meshSettings, 'visible').onChange((newVis: boolean) => {
-            this.regenMesh(app);
-        });
-        sqFolder.add(this.meshSettings, "sizex", 0.05, 2, 0.01).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "sizey", 0.05, 2, 0.01).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "sizez", 0.05, 2, 0.01).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "blockiness1", 0.3, 20, 0.1).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "blockiness2", 0.3, 20, 0.1).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "res1", 3, 100, 1).onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "res2", 3, 100, 1).onChange(() => { this.regenMesh(app); });
-        sqFolder.addColor(this.meshSettings, "color1").onChange(() => { this.regenMesh(app); });
-        sqFolder.addColor(this.meshSettings, "color2").onChange(() => { this.regenMesh(app); });
-        sqFolder.add(this.meshSettings, "shininess", 0, 1000, 1).onChange(() => { this.regenMesh(app); });
+        const regenClosure = (() => { (this.regenMesh as (app: SqWatchApp) => void)(app) });
+        sqFolder.add(this.meshSettings, 'visible').onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "sizex", 0.05, 2, 0.01).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "sizey", 0.05, 2, 0.01).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "sizez", 0.05, 2, 0.01).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "blockiness1", 0.3, 20, 0.01).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "blockiness2", 0.3, 20, 0.01).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "res1", 3, 100, 1).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "res2", 3, 100, 1).onChange(regenClosure);
+        sqFolder.addColor(this.meshSettings, "color1").onChange(regenClosure);
+        sqFolder.addColor(this.meshSettings, "color2").onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "shininess", 0, 1000, 1).onChange(regenClosure);
         sqFolder.close();
 
-        this.regenMesh(app);
+        regenClosure();
     },
 
     regenMesh(app: SqWatchApp) {
