@@ -1,9 +1,10 @@
 import {
   ColorRepresentation,
-  MeshPhongMaterial, SphereGeometry,
+  MeshPhongMaterial,
 } from 'three';
+import SphericalSphereGeometry from './spherical_sphere_geometry';
 
-export default class SuperquadricGeometry extends SphereGeometry {
+export default class SuperquadricGeometry extends SphericalSphereGeometry {
   sizex: number;
 
   sizey: number;

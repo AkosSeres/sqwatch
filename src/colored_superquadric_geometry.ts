@@ -1,7 +1,8 @@
 import * as BufferGeometryUtils from 'three/examples/jsm/utils/BufferGeometryUtils';
 import {
-  BufferAttribute, BufferGeometry, Color, ColorRepresentation, MeshPhongMaterial, SphereGeometry,
+  BufferAttribute, BufferGeometry, Color, ColorRepresentation, MeshPhongMaterial,
 } from 'three';
+import SphericalSphereGeometry from './spherical_sphere_geometry';
 
 export default class ColoredSuperquadricGeometry extends BufferGeometry {
   sizex: number;
@@ -48,7 +49,7 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
     const angles2 = [0, 0, Math.PI, Math.PI];
     const colors = [this.color1, this.color2, this.color2, this.color1];
     const geoms = angles.map((angle, i) => {
-      const geometry1 = new SphereGeometry(
+      const geometry1 = new SphericalSphereGeometry(
         1,
         this.resolutionPhi,
         this.resolutionZ,

@@ -1,7 +1,7 @@
 import ColoredSuperquadricGeometry from "../colored_superquadric_geometry";
 import SuperquadricGeometry from "../superquadric_geometry";
 import SqWatchApp from "src/sq_watch.ts";
-import { BufferGeometry, ColorRepresentation, Material, Mesh, WireframeGeometry, LineSegments, MeshBasicMaterial } from "three";
+import { BufferGeometry, ColorRepresentation, Material, Mesh, MeshBasicMaterial } from "three";
 import { SqPlugin } from "./sq_plugin";
 
 type MeshSettings = {
@@ -92,6 +92,8 @@ export const SqInspectorPlugin: SqInspectPluginType = {
             mainMaterial = SuperquadricGeometry.getDefaultPhongMaterial(this.meshSettings.shininess, this.meshSettings.color1);
         }
         if (this.meshSettings.wireframe) {
+            sqGeometry.dispose();
+            mainMaterial.dispose();
             sqGeometry = new SuperquadricGeometry(
                 this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
                 this.meshSettings.blockiness1, this.meshSettings.blockiness2,
