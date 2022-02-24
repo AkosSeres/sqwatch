@@ -74,6 +74,11 @@ export default class SuperquadricGeometry extends SphericalSphereGeometry {
   }
 
   static getDefaultPhongMaterial(shininess = 150, color: ColorRepresentation = 0x0000ff) {
-    return new MeshPhongMaterial({ color, shininess });
+    return new MeshPhongMaterial({
+      color, shininess,
+      polygonOffset: true,
+      polygonOffsetFactor: 1, // positive value pushes polygon further away
+      polygonOffsetUnits: 1
+    });
   }
 }

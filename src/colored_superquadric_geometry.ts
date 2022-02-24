@@ -114,6 +114,11 @@ export default class ColoredSuperquadricGeometry extends BufferGeometry {
   }
 
   static getDefaultPhongMaterial(shininess = 150) {
-    return new MeshPhongMaterial({ vertexColors: true, shininess });
+    return new MeshPhongMaterial({
+      vertexColors: true, shininess,
+      polygonOffset: true,
+      polygonOffsetFactor: 1, // positive value pushes polygon further away
+      polygonOffsetUnits: 1
+    });
   }
 }

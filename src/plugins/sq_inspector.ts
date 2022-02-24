@@ -1,7 +1,7 @@
 import ColoredSuperquadricGeometry from "../colored_superquadric_geometry";
 import SuperquadricGeometry from "../superquadric_geometry";
 import SqWatchApp from "src/sq_watch.ts";
-import { BufferGeometry, ColorRepresentation, Material, Mesh, MeshBasicMaterial } from "three";
+import { Color, ColorRepresentation, Mesh, MeshBasicMaterial } from "three";
 import { SqPlugin } from "./sq_plugin";
 
 type MeshSettings = {
@@ -24,16 +24,14 @@ type SqInspectPluginType =
     SqPlugin
     | {
         mesh: Mesh,
-        geom: BufferGeometry,
-        material: Material,
+        wrfMesh: Mesh,
         meshSettings: MeshSettings,
         regenMesh(app: SqWatchApp): void,
     }
 
 export const SqInspectorPlugin: SqInspectPluginType = {
     mesh: null,
-    material: null,
-    geom: null,
+    wrfMesh: null,
     meshSettings: {
         visible: false,
         blockiness1: 2,
@@ -72,9 +70,19 @@ export const SqInspectorPlugin: SqInspectPluginType = {
 
     regenMesh(app: SqWatchApp) {
         // Create the basic superquadric
-        if (this.mesh) app.scene.remove(this.mesh);
-        if (this.geom) this.geom.dispose();
-        if (this.material) this.material.dispose();
+        if (this.mesh) {
+            app.scene.remove(this.mesh);
+            (this.mesh).material.dispose();
+            (this.mesh).geometry.dispose();
+            this.mesh = null;
+        }
+        if (this.wrfMesh) {
+            app.scene.remove(this.wrfMesh);
+            (this.wrfMesh).material.dispose();
+            (this.wrfMesh).geometry.dispose();
+            this.wrfMesh = null;
+        }
+
         if (!this.meshSettings.visible) return;
         let sqGeometry; let mainMaterial;
         if (this.meshSettings.doubleColored) {
@@ -91,16 +99,16 @@ export const SqInspectorPlugin: SqInspectPluginType = {
                 this.meshSettings.res1 * 2, this.meshSettings.res2 * 2);
             mainMaterial = SuperquadricGeometry.getDefaultPhongMaterial(this.meshSettings.shininess, this.meshSettings.color1);
         }
-        if (this.meshSettings.wireframe) {
-            sqGeometry.dispose();
-            mainMaterial.dispose();
-            sqGeometry = new SuperquadricGeometry(
-                this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
-                this.meshSettings.blockiness1, this.meshSettings.blockiness2,
-                this.meshSettings.res1 * 2, this.meshSettings.res2 * 2);
-            mainMaterial = new MeshBasicMaterial({ color: this.meshSettings.color1 });
-            mainMaterial.wireframe = true;
-        }
+
+        const wrfMat = new MeshBasicMaterial({
+            color: new Color(this.meshSettings.color1).offsetHSL(Math.PI / 2, 0, 0)
+        });
+        wrfMat.wireframe = true;
+        wrfMat.wireframeLinewidth = 4;
+        this.wrfMesh = new Mesh(sqGeometry, wrfMat);
+        this.wrfMesh.visible = this.meshSettings.wireframe;
+        app.scene.add(this.wrfMesh);
+
         this.mesh = new Mesh(sqGeometry, mainMaterial);
         this.mesh.castShadow = true;
         this.mesh.receiveShadow = false;
