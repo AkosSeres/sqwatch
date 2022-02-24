@@ -1,6 +1,7 @@
 import ColoredSuperquadricGeometry from "../colored_superquadric_geometry";
+import SuperquadricGeometry from "../superquadric_geometry";
 import SqWatchApp from "src/sq_watch.ts";
-import { BufferGeometry, ColorRepresentation, Material, Mesh } from "three";
+import { BufferGeometry, ColorRepresentation, Material, Mesh, WireframeGeometry, LineSegments, MeshBasicMaterial } from "three";
 import { SqPlugin } from "./sq_plugin";
 
 type MeshSettings = {
@@ -15,6 +16,8 @@ type MeshSettings = {
     sizey: number,
     sizez: number,
     shininess: number,
+    doubleColored: boolean;
+    wireframe: boolean;
 }
 
 type SqInspectPluginType =
@@ -43,6 +46,8 @@ export const SqInspectorPlugin: SqInspectPluginType = {
         sizey: 0.1,
         sizez: 0.25,
         shininess: 250,
+        doubleColored: true,
+        wireframe: false,
     },
     init(this: SqInspectPluginType, app: SqWatchApp) {
         const sqFolder = app.gui.addFolder("Superqudric inspector");
@@ -57,7 +62,9 @@ export const SqInspectorPlugin: SqInspectPluginType = {
         sqFolder.add(this.meshSettings, "res2", 3, 100, 1).onChange(regenClosure);
         sqFolder.addColor(this.meshSettings, "color1").onChange(regenClosure);
         sqFolder.addColor(this.meshSettings, "color2").onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "doubleColored").onChange(regenClosure);
         sqFolder.add(this.meshSettings, "shininess", 0, 1000, 1).onChange(regenClosure);
+        sqFolder.add(this.meshSettings, "wireframe").onChange(regenClosure);
         sqFolder.close();
 
         regenClosure();
@@ -69,12 +76,29 @@ export const SqInspectorPlugin: SqInspectPluginType = {
         if (this.geom) this.geom.dispose();
         if (this.material) this.material.dispose();
         if (!this.meshSettings.visible) return;
-        const sqGeometry = new ColoredSuperquadricGeometry(
-            this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
-            this.meshSettings.blockiness1, this.meshSettings.blockiness2,
-            this.meshSettings.color1, this.meshSettings.color2,
-            this.meshSettings.res1, this.meshSettings.res2);
-        const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(this.meshSettings.shininess);
+        let sqGeometry; let mainMaterial;
+        if (this.meshSettings.doubleColored) {
+            sqGeometry = new ColoredSuperquadricGeometry(
+                this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
+                this.meshSettings.blockiness1, this.meshSettings.blockiness2,
+                this.meshSettings.color1, this.meshSettings.color2,
+                this.meshSettings.res1, this.meshSettings.res2);
+            mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(this.meshSettings.shininess);
+        } else {
+            sqGeometry = new SuperquadricGeometry(
+                this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
+                this.meshSettings.blockiness1, this.meshSettings.blockiness2,
+                this.meshSettings.res1 * 2, this.meshSettings.res2 * 2);
+            mainMaterial = SuperquadricGeometry.getDefaultPhongMaterial(this.meshSettings.shininess, this.meshSettings.color1);
+        }
+        if (this.meshSettings.wireframe) {
+            sqGeometry = new SuperquadricGeometry(
+                this.meshSettings.sizex, this.meshSettings.sizey, this.meshSettings.sizez,
+                this.meshSettings.blockiness1, this.meshSettings.blockiness2,
+                this.meshSettings.res1 * 2, this.meshSettings.res2 * 2);
+            mainMaterial = new MeshBasicMaterial({ color: this.meshSettings.color1 });
+            mainMaterial.wireframe = true;
+        }
         this.mesh = new Mesh(sqGeometry, mainMaterial);
         this.mesh.castShadow = true;
         this.mesh.receiveShadow = false;
