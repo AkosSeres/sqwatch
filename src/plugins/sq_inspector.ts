@@ -3,6 +3,7 @@ import SuperquadricGeometry from "../superquadric_geometry";
 import SqWatchApp from "src/sq_watch.ts";
 import { Color, ColorRepresentation, Mesh, MeshBasicMaterial } from "three";
 import { SqPlugin } from "./sq_plugin";
+import { inspectParams } from "../inspect_params";
 
 type MeshSettings = {
     visible: boolean,
@@ -49,6 +50,31 @@ export const SqInspectorPlugin: SqInspectPluginType = {
     },
     init(this: SqInspectPluginType, app: SqWatchApp) {
         const sqFolder = app.gui.addFolder("Superqudric inspector");
+
+        const numParams = inspectParams();
+        if (typeof numParams == "object") {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.sizex = numParams[0];
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.sizey = numParams[1];
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.sizez = numParams[2];
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.res1 = 35;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.res2 = 35;
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            this.meshSettings.visible = true;
+
+            sqFolder.open();
+        } else sqFolder.close();
+
         const regenClosure = (() => { (this.regenMesh as (app: SqWatchApp) => void)(app) });
         sqFolder.add(this.meshSettings, 'visible').onChange(regenClosure);
         sqFolder.add(this.meshSettings, "sizex", 0.05, 2, 0.01).onChange(regenClosure);
@@ -63,7 +89,6 @@ export const SqInspectorPlugin: SqInspectPluginType = {
         sqFolder.add(this.meshSettings, "doubleColored").onChange(regenClosure);
         sqFolder.add(this.meshSettings, "shininess", 0, 1000, 1).onChange(regenClosure);
         sqFolder.add(this.meshSettings, "wireframe").onChange(regenClosure);
-        sqFolder.close();
 
         regenClosure();
     },

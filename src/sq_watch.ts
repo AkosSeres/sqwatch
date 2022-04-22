@@ -7,6 +7,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GUI } from 'dat.gui';
 import ColoredSuperquadricGeometry from './colored_superquadric_geometry';
 import { SqPlugin } from './plugins/sq_plugin';
+import { inspectParams } from './inspect_params';
 
 /**
  * A class containing the whole app, where we can attach plugins.
@@ -144,14 +145,15 @@ export default class SqWatchApp {
         // Add animation timeline
         const keyframeGui = this.gui.addFolder('Keyframes');
         keyframeGui.open();
+        if (typeof inspectParams() == "object") this.gui.removeFolder(keyframeGui);
         const tline = keyframeGui.add(animProps, 'drawIdx', 0, rollingMeshes.length - 1, 1).listen();
 
         /**
-             * The update function.
-             *
-             * @param {boolean} occasional Brings animation about presence of animation
-             * @return {null} Nothing
-             */
+        * The update function.
+        *
+        * @param {boolean} occasional Brings animation about presence of animation
+        * @return {null} Nothing
+        */
         const animate = (occasional: boolean) => {
             if (!occasional) requestAnimationFrame(() => { animate(false); });
 
@@ -198,6 +200,11 @@ export default class SqWatchApp {
         this.camera = new PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.05, 500);
         this.camera.up = new Vector3(0, 0, 1);
         this.camera.position.set(15, 0, 1);
+        const numParams = inspectParams();
+        if (typeof numParams == "object") {
+            const sizeParam = 2.5 * Math.sqrt(numParams[0] ** 2 + numParams[1] ** 2 + numParams[2] ** 2);
+            this.camera.position.set(sizeParam, sizeParam, 0);
+        }
         this.camera.lookAt(0, 0, 0);
     }
 
