@@ -54,6 +54,9 @@ export default class SqWatchApp {
 
         const rollingMeshes: Array<Mesh> = [];
         const sqGeometry = new ColoredSuperquadricGeometry(0.0854988, 0.0854988, 0.341995, 2, 2, 'blue', 'yellow', 8, 4);
+        //const sqGeometry = new ColoredSuperquadricGeometry(0.184202, 0.184202, 0.0736806, 2, 2, 'blue', 'yellow', 8, 8);
+        //const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 8, 8);
+        //const sqGeometry = new ColoredSuperquadricGeometry(0.146201, 0.146201, 0.116961, 2, 2, 'blue', 'yellow', 8, 8);
         const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
         const mesh = new Mesh(sqGeometry, mainMaterial);
         let currentMesh: Mesh = mesh;
