@@ -1,0 +1,27 @@
+.dg li.title {
+    background-color: rgba(0, 0, 0, 0.53) !important;
+    border-radius: 0px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.3px);
+    -webkit-backdrop-filter: blur(6.3px);
+    border: 1px solid rgba(0, 0, 0, 1);
+}
+
+.dg.main .close-button.close-bottom {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.3px);
+    -webkit-backdrop-filter: blur(6.3px);
+    border: 1px solid rgba(0, 0, 0, 1);
+}
+
+.dg li.cr {
+    background-color: rgba(1, 1, 1, 0.73) !important;
+    border-radius: 0px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(6.3px);
+    -webkit-backdrop-filter: blur(6.3px);
+    border: 1px solid rgba(0, 0, 0, 1);
+}

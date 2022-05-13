@@ -1,4 +1,5 @@
 import { SqPlugin } from "./sq_plugin"
+import "../styles.css"
 
 /**
  * This plugin removes the unnecessary margins of the document.
