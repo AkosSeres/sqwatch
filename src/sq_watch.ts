@@ -53,8 +53,9 @@ export default class SqWatchApp {
         });
 
         const rollingMeshes: Array<Mesh> = [];
-        const sqGeometry = new ColoredSuperquadricGeometry(0.0854988, 0.0854988, 0.341995, 2, 2, 'blue', 'yellow', 8, 4);
-        //const sqGeometry = new ColoredSuperquadricGeometry(0.184202, 0.184202, 0.0736806, 2, 2, 'blue', 'yellow', 8, 8);
+        // const sqGeometry = new ColoredSuperquadricGeometry(0.0854988, 0.0854988, 0.341995, 2, 2, 'blue', 'yellow', 8, 4);
+        // const sqGeometry = new ColoredSuperquadricGeometry(0.184202, 0.184202, 0.0736806, 2, 2, 'blue', 'yellow', 8, 8);
+        const sqGeometry = new ColoredSuperquadricGeometry(0.5, 0.5, 0.5, 2, 2, 'blue', 'yellow', 8, 8);
         //const sqGeometry = new ColoredSuperquadricGeometry(0.1, 0.1, 0.25, 2, 2, 'blue', 'yellow', 8, 8);
         //const sqGeometry = new ColoredSuperquadricGeometry(0.146201, 0.146201, 0.116961, 2, 2, 'blue', 'yellow', 8, 8);
         const mainMaterial = ColoredSuperquadricGeometry.getDefaultPhongMaterial(250);
@@ -74,7 +75,6 @@ export default class SqWatchApp {
                 const resBuf = await str;
                 const dw = new DataView(resBuf);
                 const enc = new TextDecoder();
-                const isDone = false;
 
                 const coords = [];
                 const tensor = [];
@@ -82,7 +82,7 @@ export default class SqWatchApp {
 
                 let position = 0;
                 let currPos = position;
-                while (!isDone) {
+                while (currPos < dw.byteLength) {
                     while (dw.getUint8(currPos) !== '\n'.charCodeAt(0)) {
                         currPos += 1;
                     }
@@ -105,12 +105,10 @@ export default class SqWatchApp {
                         }
 
                         currPos += nn * 8 * 9;
-                        break;
                     }
                     position = currPos;
                 }
-
-                if (nn !== 0) {
+                if (coords.length !== 0) {
                     scene.remove(mesh);
                     const matrix = new Matrix4();
                     const matrixRot = new Matrix4();
@@ -118,7 +116,9 @@ export default class SqWatchApp {
                     fileMesh = new InstancedMesh(sqGeometry, mainMaterial, nn);
 
                     for (let i = 0; i < nn; i += 1) {
-                        matrix3.fromArray(tensor, i * 9);
+                        if (tensor.length !== 0) matrix3.fromArray(tensor, i * 9);
+                        else matrix3.identity();
+
                         matrixRot.setFromMatrix3(matrix3.transpose());
                         matrix.makeTranslation(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]);
                         fileMesh.setMatrixAt(i, (matrix).multiply(matrixRot));
