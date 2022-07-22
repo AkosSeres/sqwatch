@@ -1,4 +1,4 @@
-import { InstancedMesh, Matrix4, Matrix3 } from "three";
+import { InstancedMesh, Matrix4, Matrix3, Vector3 } from "three";
 import ColoredSuperquadricGeometry from "./colored_superquadric_geometry";
 
 const sphereGeometry = new ColoredSuperquadricGeometry(1, 1, 1, 2, 2, 'blue', 'yellow', 8, 8);
@@ -15,6 +15,12 @@ export const loadFromVtk = async (file: File) => {
     const tensor = [];
     const radiuses = [];
     let radiusCount = 0;
+    const shapeXs = [];
+    let shapexCount = 0;
+    const shapeYs = [];
+    let shapeyCount = 0;
+    const shapeZs = [];
+    let shapezCount = 0;
     let nn = 0;
 
     let position = 0;
@@ -52,6 +58,33 @@ export const loadFromVtk = async (file: File) => {
 
             currPos += radiusCount * 8;
         }
+        match = line.match(/shapex 1 ([0-9]+) double/);
+        if (match) {
+            shapexCount = Number.parseInt(match[1], 10);
+            for (let i = currPos; i < currPos + shapexCount * 8; i += 8) {
+                shapeXs.push(dw.getFloat64(i));
+            }
+
+            currPos += shapexCount * 8;
+        }
+        match = line.match(/shapey 1 ([0-9]+) double/);
+        if (match) {
+            shapeyCount = Number.parseInt(match[1], 10);
+            for (let i = currPos; i < currPos + shapeyCount * 8; i += 8) {
+                shapeYs.push(dw.getFloat64(i));
+            }
+
+            currPos += shapeyCount * 8;
+        }
+        match = line.match(/shapez 1 ([0-9]+) double/);
+        if (match) {
+            shapezCount = Number.parseInt(match[1], 10);
+            for (let i = currPos; i < currPos + shapezCount * 8; i += 8) {
+                shapeZs.push(dw.getFloat64(i));
+            }
+
+            currPos += shapezCount * 8;
+        }
         position = currPos;
     }
     if (coords.length !== 0) {
@@ -65,6 +98,8 @@ export const loadFromVtk = async (file: File) => {
             else matrix3.identity();
 
             if (radiuses[i] !== undefined) matrix.makeScale(radiuses[i], radiuses[i], radiuses[i]);
+            if (shapeXs[i] !== undefined && shapeYs[i] !== undefined && shapeZs[i] !== undefined)
+                matrix.scale(new Vector3(shapeXs[i], shapeYs[i], shapeZs[i]));
             matrixRot.setFromMatrix3(matrix3.transpose());
             matrix.premultiply(matrixRot);
             matrix.premultiply(new Matrix4().makeTranslation(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]));
