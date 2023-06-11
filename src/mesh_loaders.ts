@@ -100,6 +100,12 @@ export const loadFromVtk = async (file: File) => {
             if (radiuses[i] !== undefined) matrix.makeScale(radiuses[i], radiuses[i], radiuses[i]);
             if (shapeXs[i] !== undefined && shapeYs[i] !== undefined && shapeZs[i] !== undefined)
                 matrix.scale(new Vector3(shapeXs[i], shapeYs[i], shapeZs[i]));
+            {
+                const z = coords[i * 3 + 2];
+                if (!(z < 2.0 && z > 1.0)) {
+                    matrix.scale(new Vector3(0, 0, 0));
+                }
+            }
             matrixRot.setFromMatrix3(matrix3.transpose());
             matrix.premultiply(matrixRot);
             matrix.premultiply(new Matrix4().makeTranslation(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2]));
